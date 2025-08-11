@@ -89,12 +89,14 @@ class LogWatcher {
             if (matchPlayer) {
               const playerName = matchPlayer[1];
               const x = parseFloat(matchPlayer[2]);
+              const y = parseFloat(matchPlayer[3]);
               const z = parseFloat(matchPlayer[4]);
 
               wsManager.broadcast({
                 type: "player_position",
                 name: playerName,
                 x,
+                y,
                 z,
               });
               return;
