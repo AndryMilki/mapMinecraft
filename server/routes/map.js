@@ -1,0 +1,99 @@
+const express = require("express");
+const multer = require("multer");
+const fs = require("fs");
+const path = require("path");
+const router = express.Router();
+const { logWatcherInstance } = require("../components/logReader");
+const DATA_DIR = path.join(__dirname, "../data");
+const MAPS_DIR = path.join(DATA_DIR, "maps");
+const CONFIG_FILE = path.join(DATA_DIR, "config.json");
+
+fs.mkdirSync(MAPS_DIR, { recursive: true });
+
+const upload = multer({ dest: MAPS_DIR });
+
+router.post("/upload", upload.single("file"), (req, res) => {
+  const tempPath = req.file.path; 
+  const targetPath = path.join(MAPS_DIR, "map.png");
+
+  try {
+    fs.copyFileSync(tempPath, targetPath);
+    fs.unlinkSync(tempPath);
+    res.json({ status: "ok", filename: "map.png" });
+  } catch (err) {
+    console.error("Ошибка при сохранении файла:", err);
+    res.status(500).json({ status: "error", message: err.message });
+  }
+});
+
+
+router.post("/set_bounds", express.urlencoded({ extended: true }), (req, res) => {
+  const config = {
+    top_left: [parseFloat(req.body.top_left_x), parseFloat(req.body.top_left_z)],
+    bottom_right: [parseFloat(req.body.bottom_right_x), parseFloat(req.body.bottom_right_z)],
+  };
+  fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
+  res.json({ status: "ok" });
+});
+
+router.get("/config", (req, res) => {
+  if (fs.existsSync(CONFIG_FILE)) {
+    const data = fs.readFileSync(CONFIG_FILE, "utf-8");
+    res.json(JSON.parse(data));
+  } else {
+    res.json({});
+  }
+});
+
+router.post("/watch", (req, res) => {
+  console.log("POST /watch received:", req.body);
+  
+  let { logFilePath } = req.body;
+
+  if (!logFilePath || typeof logFilePath !== "string") {
+    return res.status(400).json({ status: "error", message: "Invalid logFilePath" });
+  }
+
+  try {
+    let containerPath;
+    
+    if (logFilePath.match(/^C:\\Users\\/i)) {
+      containerPath = logFilePath
+        .replace(/^C:\\Users\\/i, '/host/Users/')
+        .replace(/\\/g, '/');
+    } else {
+      return res.status(400).json({ 
+        status: "error", 
+        message: "Поддерживаются только пути в папке C:\\Users\\" 
+      });
+    }
+
+    console.log("Original path:", logFilePath);
+    console.log("Container path:", containerPath);
+
+    if (!fs.existsSync(containerPath)) {
+      return res.status(404).json({ 
+        status: "error", 
+        message: `Файл не найден: ${logFilePath}` 
+      });
+    }
+
+    logWatcherInstance.stop();
+    const started = logWatcherInstance.start(containerPath);
+
+    if (started) {
+      res.json({ 
+        status: "ok", 
+        message: `Начато слежение за файлом: ${logFilePath}` 
+      });
+    } else {
+      res.status(500).json({ 
+        status: "error", 
+        message: "Не удалось запустить слежение за файлом" 
+      });
+    }
+  } catch (err) {
+    res.status(500).json({ status: "error", message: err.message });
+  }
+});
+module.exports = router;

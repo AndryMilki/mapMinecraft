@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  client:
+    build: ./client
+    ports:
+      - "3000:80"
+    depends_on:
+      - server
+    networks:
+      - app-network
+
+  server:
+    build: ./server
+    ports:
+      - "5000:5000"
+    volumes:
+      - "C:/Users:/host/Users"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
