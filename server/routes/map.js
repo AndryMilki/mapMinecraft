@@ -61,7 +61,7 @@ router.post("/watch", (req, res) => {
       containerPath = logFilePath;
     } else if (logFilePath.match(/^C:\\Users\\/i)) {
       containerPath = logFilePath
-        .replace(/^C:\\Users\\/i, '/host/Users/Андрей/') 
+        .replace(/^C:\\Users\\/i, '/host/Users/')
         .replace(/\\/g, '/');
     } else {
       return res.status(400).json({ 
