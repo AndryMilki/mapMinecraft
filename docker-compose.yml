@@ -14,7 +14,7 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - "C:/Users:/host/Users"
+      - "/mnt/c/Users:/host/Users"
     networks:
       - app-network
 
