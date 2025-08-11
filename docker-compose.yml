@@ -14,7 +14,7 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - "/home/andry/.cristalix:/host/Users/Андрей/.cristalix"
+      - "/home/andry/.cristalix:/host/Users/Andrey/.cristalix"
     networks:
       - app-network
 
