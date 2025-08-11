@@ -21,7 +21,7 @@ router.post("/upload", upload.single("file"), (req, res) => {
     fs.unlinkSync(tempPath);
     res.json({ status: "ok", filename: "map.png" });
   } catch (err) {
-    console.error("Ошибка при сохранении файла:", err);
+    console.error("Error while saving:", err);
     res.status(500).json({ status: "error", message: err.message });
   }
 });
@@ -64,7 +64,7 @@ router.post("/watch", (req, res) => {
     } else {
       return res.status(400).json({ 
         status: "error", 
-        message: "Поддерживаются только пути в папке C:\\Users\\" 
+        message: "Supports only paths in the C:\\Users\\ folder" 
       });
     }
 
@@ -74,7 +74,7 @@ router.post("/watch", (req, res) => {
     if (!fs.existsSync(containerPath)) {
       return res.status(404).json({ 
         status: "error", 
-        message: `Файл не найден: ${logFilePath}` 
+        message: `File not found: ${logFilePath}` 
       });
     }
 
@@ -84,12 +84,12 @@ router.post("/watch", (req, res) => {
     if (started) {
       res.json({ 
         status: "ok", 
-        message: `Начато слежение за файлом: ${logFilePath}` 
+        message: `Started watching file: ${logFilePath}` 
       });
     } else {
       res.status(500).json({ 
         status: "error", 
-        message: "Не удалось запустить слежение за файлом" 
+        message: "Failed to start watching file" 
       });
     }
   } catch (err) {
