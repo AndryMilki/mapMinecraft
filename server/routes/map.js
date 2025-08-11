@@ -56,25 +56,27 @@ router.post("/watch", (req, res) => {
 
   try {
     let containerPath;
-    
-    if (logFilePath.match(/^C:\\Users\\/i)) {
+
+    if (logFilePath.startsWith('/host/Users/')) {
+      containerPath = logFilePath;
+    } else if (logFilePath.match(/^C:\\Users\\/i)) {
       containerPath = logFilePath
-        .replace(/^C:\\Users\\/i, '/host/Users/')
+        .replace(/^C:\\Users\\/i, '/host/Users/Андрей/') 
         .replace(/\\/g, '/');
     } else {
       return res.status(400).json({ 
         status: "error", 
-        message: "Supports only paths in the C:\\Users\\ folder" 
+        message: "Supports only paths in the C:\\Users\\ folder or /host/Users/ path" 
       });
     }
 
     console.log("Original path:", logFilePath);
-    console.log("Container path:", containerPath);
+    console.log("Resolved container path:", containerPath);
 
     if (!fs.existsSync(containerPath)) {
       return res.status(404).json({ 
         status: "error", 
-        message: `File not found: ${logFilePath}` 
+        message: `File not found: ${containerPath}` 
       });
     }
 
@@ -84,7 +86,7 @@ router.post("/watch", (req, res) => {
     if (started) {
       res.json({ 
         status: "ok", 
-        message: `Started watching file: ${logFilePath}` 
+        message: `Started watching file: ${containerPath}` 
       });
     } else {
       res.status(500).json({ 
@@ -96,4 +98,5 @@ router.post("/watch", (req, res) => {
     res.status(500).json({ status: "error", message: err.message });
   }
 });
+
 module.exports = router;
